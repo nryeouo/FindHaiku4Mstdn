@@ -6,7 +6,7 @@ require 'sanitize'
 
 config = YAML.load_file("./key.yml")
 debug = true
-unfollow_str = "俳句検出を停止してください"
+unfollow_str = "フォロー解除"
 
 stream = Mastodon::Streaming::Client.new(
   base_url: "https://" + config["base_url"],
@@ -16,7 +16,8 @@ rest = Mastodon::REST::Client.new(
   base_url: "https://" + config["base_url"],
   bearer_token: config["access_token"])
 
-reviewer = Ikku::Reviewer.new
+#eviewer = Ikku::Reviewer.new(rule:[4, 4, 5])
+reviewer = Ikku::Reviewer.new(rule:[8, 5])
 
 reviewer_id = rest.verify_credentials().id
 
@@ -44,12 +45,18 @@ begin
           p "@#{toot.account.acct}: #{content}" if debug
           haiku = reviewer.find(content)
           if haiku then
-            postcontent = "『#{haiku.phrases[0].join("")} #{haiku.phrases[1].join("")} #{haiku.phrases[2].join("")}』"
+            #postcontent = "『#{haiku.phrases[0].join("")}#{haiku.phrases[1].join("")}#{haiku.phrases[2].join("")}』"
+            postcontent = "『#{haiku.phrases[0].join("")}#{haiku.phrases[1].join("")}』"
             p "俳句検知: #{postcontent}" if debug
+            #公開投稿にはタグをつける(BOSSのLTLに流す)
+            if toot.attributes["tags"].map{|t| t["name"]}.include?("theboss_tech") then
+              postcontent += " #theboss_tech"
+            end
+            #CWにはCW付きで返す
             if toot.attributes["spoiler_text"].empty? then
-              rest.create_status("@#{toot.account.acct} 俳句を発見しました！\n" + postcontent, toot.id)
+              rest.create_status("@#{toot.account.acct} " + postcontent + "\nはい！はい！はいはいはい！あるある探検隊！あるある探検隊！", toot.id)
             else
-              rest.create_status("@#{toot.account.acct}\n" + postcontent, in_reply_to_id: toot.id, spoiler_text: "俳句を発見しました！")
+              rest.create_status("@#{toot.account.acct}\n" + postcontent, in_reply_to_id: toot.id, spoiler_text: "はい！はい！はいはいはい！あるある探検隊！あるある探検隊！")
             end
             p "post!" if debug
           elsif debug
