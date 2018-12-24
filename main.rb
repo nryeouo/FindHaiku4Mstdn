@@ -59,6 +59,11 @@ begin
               rest.create_status("@#{toot.account.acct}\n" + postcontent, in_reply_to_id: toot.id, spoiler_text: "はい！はい！はいはいはい！あるある探検隊！あるある探検隊！")
             end
             p "post!" if debug
+          elsif content.include?("気絶") then
+            postcontent2 = ""
+            if toot.attributes["tags"].map{|t| t["name"]}.include?("theboss_tech") then
+              postcontent2 += " #theboss_tech"
+            rest.create_status("@#{toot.account.acct} \nあかん、気絶してもうた！こうなったらあるあるさんとこの探検隊呼ぶしかない！" + postcontent2, toot.id)
           elsif debug
             p "俳句なし"
           end
