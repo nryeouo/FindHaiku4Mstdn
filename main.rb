@@ -64,6 +64,7 @@ begin
             if toot.attributes["tags"].map{|t| t["name"]}.include?("theboss_tech") then
               postcontent2 += " #theboss_tech"
             rest.create_status("@#{toot.account.acct} \nあかん、気絶してもうた！こうなったらあるあるさんとこの探検隊呼ぶしかない！" + postcontent2, toot.id)
+          end
           elsif debug
             p "俳句なし"
           end
